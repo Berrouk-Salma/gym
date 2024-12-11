@@ -44,7 +44,7 @@ CREATE TABLE membres(
     telephone varchar(15)
 );
 
--- Rest of your table creation SQL
+
 
  INSERT INTO
      membres (Nom, Prenom, Telephone, Email)
@@ -84,19 +84,18 @@ UPDATE activite
 SET nom = 'Yoga', description = 'A relaxing yoga class', capacite = 30, date_Debut = '2024-01-01', date_fin = '2024-12-31', Disponiblite = 1, location = 'Room 101'
 WHERE idActivite = 1;
 
--- Example of a DELETE query on 'activite'
+
 DELETE FROM activite WHERE idActivite = 3;
 
 
--- Adding a column 'payment_status' to the 'reservation' table
+
 ALTER TABLE reservation ADD payment_status ENUM('paid', 'unpaid') DEFAULT 'unpaid';
 
--- Example of an UPDATE query on 'reservation'
+
 UPDATE reservation
 SET STATUS = 'confirme', payment_status = 'paid'
 WHERE idReservation = 1;
 
--- Example of a DELETE query on 'reservation'
 DELETE FROM reservation WHERE idReservation = 2;
 
 SELECT r.idReservation, m.nom, m.prenom, a.nom AS activite, r.date_reservation, r.STATUS
