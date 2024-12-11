@@ -49,10 +49,10 @@ CREATE TABLE membres(
  INSERT INTO
      membres (Nom, Prenom, Telephone, Email)
 VALUES (
-        'CHAMKHI',
-        'Mohammed',
+        'amina',
+        'berr',
         '212-636-253939',
-        'theshamkhi1@gmail.com'     );
+        'aminaberr1@gmail.com'     );
 
 INSERT INTO
     activite (Nom, Description,capacite,date_Debut,date_fin,Disponiblite)
