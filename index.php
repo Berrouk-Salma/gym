@@ -1,32 +1,24 @@
 <?php
 require_once 'config/database.php';
 
-//  this is Fetch statistics
-try {
-    $stats = [
-        'total_members' => $pdo->query("SELECT COUNT(*) FROM membres")->fetchColumn(),
-        'active_classes' => $pdo->query("SELECT COUNT(*) FROM activite WHERE date_fin >= CURDATE()")->fetchColumn(),
-        'total_reservations' => $pdo->query("SELECT COUNT(*) FROM reservation")->fetchColumn(),
-        'equipment' => 48
-    ];
+// Get stats with named counts
+$members_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as count FROM membres"));
+$activities_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as count FROM activite WHERE date_fin >= CURDATE()"));
+$reservations_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as count FROM reservation"));
 
-    // Fetch recent activities
-    $recent_activities = $pdo->query("
-        SELECT 
-            m.nom, m.prenom, m.Email,
-            a.nom as activity_name,
-            r.date_reservation,
-            r.STATUS
-        FROM reservation r
-        JOIN membres m ON r.idMembre = m.idMembre
-        JOIN activite a ON r.idActivite = a.idActivite
-        ORDER BY r.date_reservation DESC
-        LIMIT 5
-    ")->fetchAll();
+// Get recent activities
+$sql = "SELECT 
+    m.nom, m.prenom, m.Email,
+    a.nom as activity_name,
+    r.date_reservation,
+    r.STATUS
+FROM reservation r
+JOIN membres m ON r.idMembre = m.idMembre
+JOIN activite a ON r.idActivite = a.idActivite
+ORDER BY r.date_reservation DESC
+LIMIT 5";
 
-} catch(PDOException $e) {
-    $error = "Erreur: " . $e->getMessage();
-}
+$result = mysqli_query($conn, $sql);
 ?>
 
 <!DOCTYPE html>
@@ -94,7 +86,7 @@ try {
                         </div>
                         <div class="ml-4">
                             <h2 class="text-gray-400 text-sm">Total Members</h2>
-                            <p class="text-white text-2xl font-bold"><?= $stats['total_members'] ?></p>
+                            <p class="text-white text-2xl font-bold"><?= $members_count['count'] ?></p>
                         </div>
                     </div>
                 </div>
@@ -108,7 +100,7 @@ try {
                         </div>
                         <div class="ml-4">
                             <h2 class="text-gray-400 text-sm">Active Classes</h2>
-                            <p class="text-white text-2xl font-bold"><?= $stats['active_classes'] ?></p>
+                            <p class="text-white text-2xl font-bold"><?= $activities_count['count'] ?></p>
                         </div>
                     </div>
                 </div>
@@ -122,7 +114,7 @@ try {
                         </div>
                         <div class="ml-4">
                             <h2 class="text-gray-400 text-sm">Reservations</h2>
-                            <p class="text-white text-2xl font-bold"><?= $stats['total_reservations'] ?></p>
+                            <p class="text-white text-2xl font-bold"><?= $reservations_count['count'] ?></p>
                         </div>
                     </div>
                 </div>
@@ -136,7 +128,7 @@ try {
                         </div>
                         <div class="ml-4">
                             <h2 class="text-gray-400 text-sm">Equipment</h2>
-                            <p class="text-white text-2xl font-bold"><?= $stats['equipment'] ?></p>
+                            <p class="text-white text-2xl font-bold">48</p>
                         </div>
                     </div>
                 </div>
@@ -158,7 +150,7 @@ try {
                             </tr>
                         </thead>
                         <tbody class="bg-gray-800 divide-y divide-gray-700">
-                            <?php foreach($recent_activities as $activity): ?>
+                            <?php while($activity = mysqli_fetch_assoc($result)): ?>
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
@@ -166,13 +158,13 @@ try {
                                                 <span class="text-white"><?= substr($activity['nom'], 0, 1) . substr($activity['prenom'], 0, 1) ?></span>
                                             </div>
                                             <div class="ml-4">
-                                                <div class="text-sm font-medium text-white"><?= htmlspecialchars($activity['nom'] . ' ' . $activity['prenom']) ?></div>
-                                                <div class="text-sm text-gray-400"><?= htmlspecialchars($activity['Email']) ?></div>
+                                                <div class="text-sm font-medium text-white"><?= $activity['nom'] . ' ' . $activity['prenom'] ?></div>
+                                                <div class="text-sm text-gray-400"><?= $activity['Email'] ?></div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-white"><?= htmlspecialchars($activity['activity_name']) ?></div>
+                                        <div class="text-sm text-white"><?= $activity['activity_name'] ?></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-400"><?= date('d/m/Y H:i', strtotime($activity['date_reservation'])) ?></div>
@@ -182,11 +174,11 @@ try {
                                             <?= $activity['STATUS'] === 'confirme' ? 'bg-green-100 text-green-800' : 
                                                 ($activity['STATUS'] === 'Anuller' ? 'bg-red-100 text-red-800' : 
                                                 'bg-yellow-100 text-yellow-800') ?>">
-                                            <?= htmlspecialchars($activity['STATUS']) ?>
+                                            <?= $activity['STATUS'] ?>
                                         </span>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php endwhile; ?>
                         </tbody>
                     </table>
                 </div>

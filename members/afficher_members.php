@@ -2,13 +2,8 @@
 // members/afficher_members.php
 require_once '../config/database.php';
 
-try {
-   $sql = "SELECT * FROM membres ORDER BY nom";
-   $stmt = $pdo->query($sql);
-   $members = $stmt->fetchAll();
-} catch(PDOException $e) {
-   $error = "Erreur: " . $e->getMessage();
-}
+$sql = "SELECT * FROM membres ORDER BY nom";
+$result = mysqli_query($conn, $sql);
 ?>
 
 <!DOCTYPE html>
@@ -28,13 +23,6 @@ try {
            </a>
        </div>
 
-       <!-- Error message if any -->
-       <?php if (isset($error)): ?>
-           <div class="bg-red-500 text-white p-4 rounded mb-4">
-               <?= $error ?>
-           </div>
-       <?php endif; ?>
-
        <!-- Members table -->
        <div class="bg-gray-800 rounded-lg overflow-hidden">
            <table class="min-w-full">
@@ -49,14 +37,14 @@ try {
                    </tr>
                </thead>
                <tbody class="divide-y divide-gray-700">
-                   <?php if(isset($members) && !empty($members)): ?>
-                       <?php foreach($members as $member): ?>
+                   <?php if(mysqli_num_rows($result) > 0): ?>
+                       <?php while($member = mysqli_fetch_assoc($result)): ?>
                            <tr class="text-gray-300">
-                               <td class="px-6 py-4"><?= htmlspecialchars($member['idMembre']) ?></td>
-                               <td class="px-6 py-4"><?= htmlspecialchars($member['nom']) ?></td>
-                               <td class="px-6 py-4"><?= htmlspecialchars($member['prenom']) ?></td>
-                               <td class="px-6 py-4"><?= htmlspecialchars($member['Email']) ?></td>
-                               <td class="px-6 py-4"><?= htmlspecialchars($member['telephone']) ?></td>
+                               <td class="px-6 py-4"><?= $member['idMembre'] ?></td>
+                               <td class="px-6 py-4"><?= $member['nom'] ?></td>
+                               <td class="px-6 py-4"><?= $member['prenom'] ?></td>
+                               <td class="px-6 py-4"><?= $member['Email'] ?></td>
+                               <td class="px-6 py-4"><?= $member['telephone'] ?></td>
                                <td class="px-6 py-4">
                                    <a href="modifier_member.php?id=<?= $member['idMembre'] ?>" 
                                       class="text-blue-400 hover:text-blue-300 mr-3">
@@ -69,7 +57,7 @@ try {
                                    </a>
                                </td>
                            </tr>
-                       <?php endforeach; ?>
+                       <?php endwhile; ?>
                    <?php else: ?>
                        <tr>
                            <td colspan="6" class="px-6 py-4 text-center text-gray-400">

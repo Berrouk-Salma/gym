@@ -1,39 +1,29 @@
-// reservations/ajouter_reservation.php
 <?php
+// reservations/ajouter_reservation.php
 require_once '../config/database.php';
 
 // Get members and activities for dropdowns
-try {
-   $members_sql = "SELECT * FROM membres ORDER BY nom";
-   $activities_sql = "SELECT * FROM activite ORDER BY nom";
-   
-   $members = $pdo->query($members_sql)->fetchAll();
-   $activities = $pdo->query($activities_sql)->fetchAll();
-} catch(PDOException $e) {
-   $error = "Erreur de chargement des données: " . $e->getMessage();
-}
+$members_sql = "SELECT * FROM membres ORDER BY nom";
+$activities_sql = "SELECT * FROM activite ORDER BY nom";
+
+$members_result = mysqli_query($conn, $members_sql);
+$activities_result = mysqli_query($conn, $activities_sql);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-   $idMembre = $_POST['idMembre'];
-   $idActivite = $_POST['idActivite'];
-   $date_reservation = $_POST['date_reservation'];
-   $status = $_POST['status'];
+    $idMembre = $_POST['idMembre'];
+    $idActivite = $_POST['idActivite'];
+    $date_reservation = $_POST['date_reservation'];
+    $status = $_POST['status'];
 
-   $sql = "INSERT INTO reservation (idMembre, idActivite, date_reservation, STATUS) 
-           VALUES (:idMembre, :idActivite, :date_reservation, :status)";
-   
-   try {
-       $stmt = $pdo->prepare($sql);
-       $stmt->execute([
-           'idMembre' => $idMembre,
-           'idActivite' => $idActivite,
-           'date_reservation' => $date_reservation,
-           'status' => $status
-       ]);
-       $message = "Réservation ajoutée avec succès!";
-   } catch(PDOException $e) {
-       $error = "Erreur: " . $e->getMessage();
-   }
+    $sql = "INSERT INTO reservation (idMembre, idActivite, date_reservation, STATUS) 
+            VALUES ('$idMembre', '$idActivite', '$date_reservation', '$status')";
+    
+    if(mysqli_query($conn, $sql)) {
+        header("Location: afficher_reservations.php");
+        exit();
+    } else {
+        $error = "Error: " . mysqli_error($conn);
+    }
 }
 ?>
 
@@ -51,12 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
        <h2 class="text-white text-2xl mb-6">Nouvelle Réservation</h2>
 
-       <?php if (isset($message)): ?>
-           <div class="bg-green-500 text-white p-4 rounded mb-4">
-               <?= $message ?>
-           </div>
-       <?php endif; ?>
-
        <?php if (isset($error)): ?>
            <div class="bg-red-500 text-white p-4 rounded mb-4">
                <?= $error ?>
@@ -69,11 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                <select name="idMembre" required 
                    class="w-full p-2 rounded bg-gray-800 text-white border border-gray-700 focus:border-pink-500 focus:outline-none">
                    <option value="">Sélectionnez un membre</option>
-                   <?php foreach($members as $member): ?>
+                   <?php while($member = mysqli_fetch_assoc($members_result)): ?>
                        <option value="<?= $member['idMembre'] ?>">
-                           <?= htmlspecialchars($member['nom'] . ' ' . $member['prenom']) ?>
+                           <?= $member['nom'] . ' ' . $member['prenom'] ?>
                        </option>
-                   <?php endforeach; ?>
+                   <?php endwhile; ?>
                </select>
            </div>
 
@@ -82,12 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                <select name="idActivite" required
                    class="w-full p-2 rounded bg-gray-800 text-white border border-gray-700 focus:border-pink-500 focus:outline-none">
                    <option value="">Sélectionnez une activité</option>
-                   <?php foreach($activities as $activity): ?>
+                   <?php while($activity = mysqli_fetch_assoc($activities_result)): ?>
                        <option value="<?= $activity['idActivite'] ?>">
-                           <?= htmlspecialchars($activity['nom']) ?> 
+                           <?= $activity['nom'] ?> 
                            (Disponible: <?= $activity['Disponiblite'] ?>)
                        </option>
-                   <?php endforeach; ?>
+                   <?php endwhile; ?>
                </select>
            </div>
 
